@@ -51,7 +51,7 @@ async function list(config: Config, reporter: Reporter, flags: Object, args: Arr
   const manifests: Array<Manifest> = await getManifests(config, flags);
   const manifestsByLicense = new Map();
 
-  for (const {name, version, license, repository, homepage, author} of manifests) {
+  for (const {name, version, license, licenseText, repository, homepage, author} of manifests) {
     const licenseKey = license || 'UNKNOWN';
     const url = repository ? repository.url : homepage;
     const vendorUrl = homepage || (author && author.url);
@@ -66,6 +66,7 @@ async function list(config: Config, reporter: Reporter, flags: Object, args: Arr
     byLicense.set(`${name}@${version}`, {
       name,
       version,
+      licenseText,
       url,
       vendorUrl,
       vendorName,
@@ -76,12 +77,20 @@ async function list(config: Config, reporter: Reporter, flags: Object, args: Arr
     const body = [];
 
     manifestsByLicense.forEach((license, licenseKey) => {
-      license.forEach(({name, version, url, vendorUrl, vendorName}) => {
-        body.push([name, version, licenseKey, url || 'Unknown', vendorUrl || 'Unknown', vendorName || 'Unknown']);
+      license.forEach(({name, version, url, licenseText, vendorUrl, vendorName}) => {
+        body.push([
+          name,
+          version,
+          licenseKey,
+          licenseText || 'Unknown',
+          url || 'Unknown',
+          vendorUrl || 'Unknown',
+          vendorName || 'Unknown',
+        ]);
       });
     });
 
-    reporter.table(['Name', 'Version', 'License', 'URL', 'VendorUrl', 'VendorName'], body);
+    reporter.table(['Name', 'Version', 'License', 'LicenseText', 'URL', 'VendorUrl', 'VendorName'], body);
   } else {
     const trees = [];
 
